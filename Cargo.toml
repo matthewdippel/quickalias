@@ -1,0 +1,7 @@
+[package]
+name = "quick_alias"
+version = "0.1.0"
+authors = ["matthewdippel <mdippel@ccs.neu.edu>"]
+
+[dependencies]
+clap = "2.31.2"
