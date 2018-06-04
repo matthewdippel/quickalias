@@ -75,11 +75,13 @@ fn main() {
                          .short("a")
                          .long("alias")
                          .value_name("alias")
+                         .required(true)
                          .help("the desired alias to add"))
                     .arg(Arg::with_name("command")
                          .short("c")
                          .long("command")
                          .value_name("command")
+                         .required(true)
                          .help("the command to alias")))
         .subcommand(SubCommand::with_name("remove")
                     .about("Remove an alias")
@@ -87,6 +89,7 @@ fn main() {
                          .short("a")
                          .long("alias")
                          .value_name("alias")
+                         .required(true)
                          .help("the desired alias to remove")))
         .subcommand(SubCommand::with_name("show")
                     .about("Show the current set of quick aliases"))
@@ -98,5 +101,8 @@ fn main() {
                          .value_name("count")
                          .help("Limit on how many commands to show")))
         .get_matches();
-    println!("{:?}",run(matches));
+    match run(matches) {
+        Ok(_) => println!(""),
+        Err(e) => println!("{:?}", e)
+    }
 }
