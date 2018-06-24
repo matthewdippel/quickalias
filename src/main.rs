@@ -1,5 +1,5 @@
 extern crate clap;
-use clap::{Arg, App, SubCommand, ArgMatches};
+use clap::{Arg, App, AppSettings, SubCommand, ArgMatches};
 mod aliases;
 use aliases::AliasConfig;
 use std::io::{Error, ErrorKind};
@@ -66,6 +66,7 @@ fn run_scan(matches: &ArgMatches) -> std::io::Result<()>{
 }
 fn main() {
     let matches = App::new("QuickAlias")
+        .setting(AppSettings::ArgRequiredElseHelp)
         .version("0.1.0")
         .author("Matthew Dippel <mattdippel@gmail.com>")
         .about("Tool for quickly adding aliases to your environment, searching history for likely candidates for aliasing, and other useful utilities")
