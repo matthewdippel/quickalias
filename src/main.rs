@@ -29,7 +29,7 @@ fn run_add(matches: &ArgMatches) -> std::io::Result<()>{
 
 fn run_remove(matches: &ArgMatches) -> std::io::Result<()>{
     let alias = matches.value_of("alias").unwrap().to_string();
-    println!("alias:{}", alias);
+    // println!("alias:{}", alias);
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path.clone());
     aliasconfig.load();
@@ -38,7 +38,7 @@ fn run_remove(matches: &ArgMatches) -> std::io::Result<()>{
                     println!("will remove alias: {}", alias);
                     println!("            command: {}", s);
                     aliasconfig.dump_aliases_to_alias_file()},
-        None => Err(Error::new(ErrorKind::Other, format!("No such alias {} in config file {:?}", alias, alias_path)))
+        None => Err(Error::new(ErrorKind::Other, format!("No such alias \"{}\" in config file {:?}", alias, alias_path)))
     }
 }
 fn run_show(matches: &ArgMatches) -> std::io::Result<()>{
@@ -103,6 +103,6 @@ fn main() {
         .get_matches();
     match run(matches) {
         Ok(_) => println!(""),
-        Err(e) => println!("{:?}", e)
+        Err(e) => println!("{}", e)
     }
 }

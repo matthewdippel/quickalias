@@ -40,8 +40,8 @@ impl AliasConfig {
 
         }
         else {
-            println!("{:?} doesnt exist, will create" , self.config_location);
-            self.create_file_if_doesnt_exist(&self.config_location);
+            //println!("{:?} doesnt exist, will create" , self.config_location);
+            //self.create_file_if_doesnt_exist(&self.config_location);
         }
     }
 
@@ -73,19 +73,19 @@ impl AliasConfig {
     pub fn remove_alias(&mut self, alias: String) -> Option<String>{
         self.aliases.remove(&alias)
     }
-    pub fn create_file_if_doesnt_exist(&self, alias_path: &PathBuf){
-        if !alias_path.exists() {
-            File::create(alias_path);
-        }
-    }
+    //pub fn create_file_if_doesnt_exist(&self, alias_path: &PathBuf) -> std::io::Result<()>{
+        //if !alias_path.exists() {
+            //File::create(alias_path)?
+        //}
+        //Ok(())
+    //}
     pub fn dump_aliases_to_alias_file(self) -> std::io::Result<()>{
         let file = File::create(&self.config_location)?;
         println!("Writing to {:?}", self.config_location);
         let mut writer = BufWriter::new(file);
-        println!("{:?}", writer);
         for (alias, command) in self.aliases {
             let line = format!("alias {}=\"{}\"\n", alias, command);
-            println!("line: {}", line);
+            // println!("line: {}", line);
             writer.write(line.as_bytes()).unwrap();
         }
         writer.flush()?;
@@ -112,15 +112,15 @@ impl AliasConfig {
         counts
     }
 
-    pub fn test_ls(&self) {
-	let opt = Command::new("ls")
-			.arg("-l")
-			.arg("-a")
-			.output()
-			.expect("ls command failed to start");
-	println!("{:?}", opt);
+    // pub fn test_ls(&self) {
+        // let opt = Command::new("ls")
+                // .arg("-l")
+                // .arg("-a")
+                // .output()
+                // .expect("ls command failed to start");
+        // println!("{:?}", opt);
 
-    }
+    // }
 
 
 }
