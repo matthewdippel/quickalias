@@ -1,7 +1,7 @@
 use std::io::{Error, ErrorKind};
 
 extern crate clap;
-use clap::{Arg, App, AppSettings, SubCommand, ArgMatches};
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 
 mod aliases;
 use aliases::AliasConfig;
@@ -12,11 +12,11 @@ fn run(matches: ArgMatches) -> std::io::Result<()> {
         ("remove", Some(m)) => run_remove(m),
         ("show", Some(m)) => run_show(m),
         ("scan", Some(m)) => run_scan(m),
-        _ => Ok(())
+        _ => Ok(()),
     }
 }
 
-fn run_add(matches: &ArgMatches) -> std::io::Result<()>{
+fn run_add(matches: &ArgMatches) -> std::io::Result<()> {
     let alias = matches.value_of("alias").unwrap().to_string();
     let command = matches.value_of("command").unwrap().to_string();
     println!("alias:{}", alias);
@@ -29,22 +29,30 @@ fn run_add(matches: &ArgMatches) -> std::io::Result<()>{
     aliasconfig.dump_aliases_to_alias_file()
 }
 
-fn run_remove(matches: &ArgMatches) -> std::io::Result<()>{
+fn run_remove(matches: &ArgMatches) -> std::io::Result<()> {
     let alias = matches.value_of("alias").unwrap().to_string();
     // println!("alias:{}", alias);
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path.clone());
     aliasconfig.load();
-    match aliasconfig.remove_alias(alias.clone()){
-        Some(s) => {aliasconfig.debug();
-                    println!("will remove alias: {}", alias);
-                    println!("            command: {}", s);
-                    aliasconfig.dump_aliases_to_alias_file()},
-        None => Err(Error::new(ErrorKind::Other, format!("No such alias \"{}\" in config file {:?}", alias, alias_path)))
+    match aliasconfig.remove_alias(alias.clone()) {
+        Some(s) => {
+            aliasconfig.debug();
+            println!("will remove alias: {}", alias);
+            println!("            command: {}", s);
+            aliasconfig.dump_aliases_to_alias_file()
+        }
+        None => Err(Error::new(
+            ErrorKind::Other,
+            format!(
+                "No such alias \"{}\" in config file {:?}",
+                alias, alias_path
+            ),
+        )),
     }
 }
 
-fn run_show(_matches: &ArgMatches) -> std::io::Result<()>{
+fn run_show(_matches: &ArgMatches) -> std::io::Result<()> {
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path);
     aliasconfig.load();
@@ -52,14 +60,18 @@ fn run_show(_matches: &ArgMatches) -> std::io::Result<()>{
     Ok(())
 }
 
-fn run_scan(matches: &ArgMatches) -> std::io::Result<()>{
+fn run_scan(matches: &ArgMatches) -> std::io::Result<()> {
     let alias_path = aliases::default_path();
     let aliasconfig = AliasConfig::new(alias_path);
     let history_string = aliasconfig.scan_history();
     let history_counts = aliasconfig.parse_history_string(history_string);
     let mut count_vec: Vec<_> = history_counts.iter().collect();
     count_vec.sort_by(|a, b| b.1.cmp(a.1));
-    let n = matches.value_of("count").unwrap_or("10").parse::<usize>().unwrap();
+    let n = matches
+        .value_of("count")
+        .unwrap_or("10")
+        .parse::<usize>()
+        .unwrap();
     for tup in count_vec.iter().take(n) {
         println!("{} :: {}", tup.0, tup.1);
     }
@@ -106,6 +118,6 @@ fn main() {
         .get_matches();
     match run(matches) {
         Ok(_) => println!(""),
-        Err(e) => println!("{}", e)
+        Err(e) => println!("{}", e),
     }
 }
