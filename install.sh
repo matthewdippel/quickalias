@@ -13,6 +13,11 @@ function display_good(){
         echo "    ${green}$line${reset}"
     done
 }
+if [ -z "$INSTALL_DIR" ] ; then
+    echo "No installation directory provided."
+    echo "Defaulting to /usr/local/bin"
+    INSTALL_DIR="/usr/local/bin"
+fi
 if [ ! -d "$INSTALL_DIR" ] ; then
     echo "$INSTALL_DIR doesn't exist, making..."
     err="$(mkdir $INSTALL_DIR 2>&1)"
