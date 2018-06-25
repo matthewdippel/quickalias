@@ -6,6 +6,7 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 mod aliases;
 use aliases::AliasConfig;
 
+/// Delegate the command line argument command to the appropriate method.
 fn run(matches: ArgMatches) -> std::io::Result<()> {
     match matches.subcommand() {
         ("add", Some(m)) => run_add(m),
@@ -16,6 +17,7 @@ fn run(matches: ArgMatches) -> std::io::Result<()> {
     }
 }
 
+/// Add an alias to the quickalias file.
 fn run_add(matches: &ArgMatches) -> std::io::Result<()> {
     let alias = matches.value_of("alias").unwrap().to_string();
     let command = matches.value_of("command").unwrap().to_string();
@@ -29,6 +31,7 @@ fn run_add(matches: &ArgMatches) -> std::io::Result<()> {
     aliasconfig.dump_aliases_to_alias_file()
 }
 
+/// Remove an alias from the quickalias file.
 fn run_remove(matches: &ArgMatches) -> std::io::Result<()> {
     let alias = matches.value_of("alias").unwrap().to_string();
     // println!("alias:{}", alias);
@@ -52,6 +55,7 @@ fn run_remove(matches: &ArgMatches) -> std::io::Result<()> {
     }
 }
 
+/// Display the contents of the quickalias file.
 fn run_show(_matches: &ArgMatches) -> std::io::Result<()> {
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path);
@@ -60,6 +64,7 @@ fn run_show(_matches: &ArgMatches) -> std::io::Result<()> {
     Ok(())
 }
 
+/// Show the most common commands from the user's bash history.
 fn run_scan(matches: &ArgMatches) -> std::io::Result<()> {
     let alias_path = aliases::default_path();
     let aliasconfig = AliasConfig::new(alias_path);
