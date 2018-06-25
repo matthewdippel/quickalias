@@ -1,8 +1,10 @@
+use std::io::{Error, ErrorKind};
+
 extern crate clap;
 use clap::{Arg, App, AppSettings, SubCommand, ArgMatches};
+
 mod aliases;
 use aliases::AliasConfig;
-use std::io::{Error, ErrorKind};
 
 fn run(matches: ArgMatches) -> std::io::Result<()> {
     match matches.subcommand() {
@@ -41,19 +43,18 @@ fn run_remove(matches: &ArgMatches) -> std::io::Result<()>{
         None => Err(Error::new(ErrorKind::Other, format!("No such alias \"{}\" in config file {:?}", alias, alias_path)))
     }
 }
-fn run_show(matches: &ArgMatches) -> std::io::Result<()>{
+
+fn run_show(_matches: &ArgMatches) -> std::io::Result<()>{
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path);
     aliasconfig.load();
     aliasconfig.debug();
     Ok(())
 }
+
 fn run_scan(matches: &ArgMatches) -> std::io::Result<()>{
     let alias_path = aliases::default_path();
     let aliasconfig = AliasConfig::new(alias_path);
-    // aliasconfig.load();
-    // aliasconfig.debug();
-    // aliasconfig.test_ls();
     let history_string = aliasconfig.scan_history();
     let history_counts = aliasconfig.parse_history_string(history_string);
     let mut count_vec: Vec<_> = history_counts.iter().collect();
@@ -64,6 +65,7 @@ fn run_scan(matches: &ArgMatches) -> std::io::Result<()>{
     }
     Ok(())
 }
+
 fn main() {
     let matches = App::new("QuickAlias")
         .setting(AppSettings::ArgRequiredElseHelp)
