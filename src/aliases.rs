@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::process::Command;
 
+/// Get default path to the file we will store aliases.
 pub fn default_path() -> PathBuf {
     match std::env::home_dir() {
         Some(path) => path.join(".quick_aliases.sh"),
@@ -12,6 +13,7 @@ pub fn default_path() -> PathBuf {
     }
 }
 
+/// Get the default path to the user's bash history file.
 pub fn default_history_path() -> PathBuf {
     match std::env::home_dir() {
         Some(path) => path.join(".bash_history"),
@@ -32,6 +34,7 @@ impl AliasConfig {
         }
     }
 
+    /// Load the aliases from the config file into memory.
     pub fn load(&mut self) {
         if self.config_location.exists() {
             let file = File::open(&self.config_location).unwrap();
@@ -41,16 +44,17 @@ impl AliasConfig {
                 self.handle_line(l);
             }
         } else {
-            //println!("{:?} doesnt exist, will create" , self.config_location);
-            //self.create_file_if_doesnt_exist(&self.config_location);
+            // do nothing
         }
     }
 
+    /// Output a debug representation of the aliases mapping to stdout.
     pub fn debug(&self) {
         println!("state of alias mapping: ");
         println!("{:?}", self.aliases);
     }
 
+    /// Parse a line from a file, looking for aliases.
     fn handle_line(&mut self, line: String) {
         let mut split = line.split(" ");
         if split.next() == Some("alias") {
@@ -61,20 +65,26 @@ impl AliasConfig {
             let command = split_eq.collect::<Vec<_>>().join("=");
             let l = command.len();
             let command_uq = &command[1..l - 1];
-            // println!("alias: {}", alias);
-            // println!("command unquoted: {}", command_uq);
             self.add_alias(alias.to_string(), command_uq.to_string());
         }
     }
 
+    /// Add an alias and associated command to the alias mapping.
     pub fn add_alias(&mut self, alias: String, command: String) {
         self.aliases.insert(alias, command);
     }
 
+    /// Remove an alias from the alias mapping if it exists.
+    /// Returns Some(command) if there was a command associated with this alias.
+    /// else returns None.
     pub fn remove_alias(&mut self, alias: String) -> Option<String> {
         self.aliases.remove(&alias)
     }
 
+    /// Write the state of the alias mapping to the alias file.
+    /// The target file will be completely overwritten. It is assumed
+    /// in usage of this method that the aliases in the file were
+    /// previously laoded into memory.
     pub fn dump_aliases_to_alias_file(self) -> std::io::Result<()> {
         let file = File::create(&self.config_location)?;
         println!("Writing to {:?}", self.config_location);
@@ -87,6 +97,7 @@ impl AliasConfig {
         Ok(())
     }
 
+    /// Read the user's history from the default histoy file.
     pub fn scan_history(&self) -> String {
         let history_loc = default_history_path();
         println!("{:?}", history_loc);
@@ -101,6 +112,7 @@ impl AliasConfig {
         )
     }
 
+    /// Parse the user's history by counting occurances of commands.
     pub fn parse_history_string(&self, history: String) -> HashMap<String, u32> {
         let mut counts = HashMap::new();
         for command in history.split('\n') {
