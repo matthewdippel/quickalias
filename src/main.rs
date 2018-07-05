@@ -25,7 +25,7 @@ fn run_add(matches: &ArgMatches) -> std::io::Result<()> {
     println!("command:{}", command);
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path);
-    aliasconfig.load();
+    aliasconfig.load()?;
     aliasconfig.add_alias(alias, command);
     aliasconfig.debug();
     aliasconfig.dump_aliases_to_alias_file()
@@ -37,7 +37,7 @@ fn run_remove(matches: &ArgMatches) -> std::io::Result<()> {
     // println!("alias:{}", alias);
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path.clone());
-    aliasconfig.load();
+    aliasconfig.load()?;
     match aliasconfig.remove_alias(alias.clone()) {
         Some(s) => {
             aliasconfig.debug();
@@ -59,7 +59,7 @@ fn run_remove(matches: &ArgMatches) -> std::io::Result<()> {
 fn run_show(_matches: &ArgMatches) -> std::io::Result<()> {
     let alias_path = aliases::default_path();
     let mut aliasconfig = AliasConfig::new(alias_path);
-    aliasconfig.load();
+    aliasconfig.load()?;
     aliasconfig.debug();
     Ok(())
 }

@@ -34,18 +34,19 @@ impl AliasConfig {
         }
     }
 
-    /// Load the aliases from the config file into memory.
-    pub fn load(&mut self) {
-        if self.config_location.exists() {
-            let file = File::open(&self.config_location).unwrap();
-            let reader = BufReader::new(file);
-            for line in reader.lines() {
-                let l = line.unwrap();
-                self.handle_line(l);
-            }
-        } else {
-            // do nothing
+    fn load_from_reader<T: BufRead>(&mut self, reader: T) -> std::io::Result<()> {
+        for line in reader.lines() {
+            let l = line.unwrap();
+            self.handle_line(l);
         }
+        Ok(())
+    }
+
+    /// Load the aliases from the config file into memory.
+    pub fn load(&mut self) -> std::io::Result<()> {
+        let file = File::open(&self.config_location)?;
+        let reader = BufReader::new(file);
+        self.load_from_reader(reader)
     }
 
     /// Output a debug representation of the aliases mapping to stdout.
@@ -56,7 +57,7 @@ impl AliasConfig {
 
     /// Parse a line from a file, looking for aliases.
     fn handle_line(&mut self, line: String) {
-        let mut split = line.split(" ");
+        let mut split = line.split_whitespace();
         if split.next() == Some("alias") {
             let rest = split.collect::<Vec<_>>().join(" ");
             // do some stuff with the rest of the string
@@ -88,10 +89,14 @@ impl AliasConfig {
     pub fn dump_aliases_to_alias_file(self) -> std::io::Result<()> {
         let file = File::create(&self.config_location)?;
         println!("Writing to {:?}", self.config_location);
-        let mut writer = BufWriter::new(file);
-        for (alias, command) in self.aliases {
+        let writer = BufWriter::new(file);
+        self.dump_aliases_to_writer(writer)
+    }
+
+    fn dump_aliases_to_writer<T: Write>(&self, mut writer: T) -> std::io::Result<()> {
+        for (alias, command) in &self.aliases {
             let line = format!("alias {}=\"{}\"\n", alias, command);
-            writer.write(line.as_bytes()).unwrap();
+            writer.write(line.as_bytes())?;
         }
         writer.flush()?;
         Ok(())
@@ -121,4 +126,33 @@ impl AliasConfig {
         }
         counts
     }
+}
+
+#[cfg(test)]
+mod test_alias {
+    use std::path::PathBuf;
+    use std::collections::HashMap;
+    use aliases::AliasConfig;
+
+    #[test]
+    fn test_reader() {
+        // create a string to read from
+        let example_input = "some random bash command
+        some other command
+        alias cp=\"cp -i\" 
+        source ~/.super_awesome_settings
+        alias rebash=\"source ~/.bashrc\"
+        andonemorerandomline";
+        let mut aliases = AliasConfig::new(PathBuf::new());
+        aliases
+            .load_from_reader(example_input.as_bytes())
+            .expect("failed to read from string in test");
+        let expected_aliases: HashMap<String, String> =
+            vec![("cp", "cp -i"), ("rebash", "source ~/.bashrc")]
+                .into_iter()
+                .map(|(a, b)| (a.to_string(), b.to_string()))
+                .collect();
+        assert_eq!(expected_aliases, aliases.aliases);
+    }
+
 }
