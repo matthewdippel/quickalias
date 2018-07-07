@@ -94,7 +94,9 @@ impl AliasConfig {
     }
 
     fn dump_aliases_to_writer<T: Write>(&self, mut writer: T) -> std::io::Result<()> {
-        for (alias, command) in &self.aliases {
+        let mut sorted_aliases: Vec<(&String, &String)> = self.aliases.iter().collect();
+        sorted_aliases.sort();
+        for &(ref alias, ref command) in sorted_aliases.iter() {
             let line = format!("alias {}=\"{}\"\n", alias, command);
             writer.write(line.as_bytes())?;
         }
@@ -133,6 +135,7 @@ mod test_alias {
     use std::path::PathBuf;
     use std::collections::HashMap;
     use aliases::AliasConfig;
+    use std::str;
 
     #[test]
     fn test_reader() {
@@ -153,6 +156,20 @@ mod test_alias {
                 .map(|(a, b)| (a.to_string(), b.to_string()))
                 .collect();
         assert_eq!(expected_aliases, aliases.aliases);
+    }
+
+    #[test]
+    fn test_writer() {
+        let mut aliases = AliasConfig::new(PathBuf::new());
+        aliases.add_alias("cp".to_string(), "cp -i".to_string());
+        aliases.add_alias("rebash".to_string(), "source ~/.bashrc".to_string());
+        let mut output_bytes: Vec<u8> = Vec::new();
+        aliases.dump_aliases_to_writer(&mut output_bytes).unwrap();
+        let output_string = str::from_utf8(&output_bytes).unwrap();
+        assert_eq!(
+            output_string,
+            "alias cp=\"cp -i\"\nalias rebash=\"source ~/.bashrc\"\n"
+        );
     }
 
 }
