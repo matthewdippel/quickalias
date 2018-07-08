@@ -45,6 +45,11 @@ impl AliasConfig {
     /// Load the aliases from the config file into memory.
     pub fn load(&mut self) -> std::io::Result<()> {
         let file = File::open(&self.config_location)?;
+        self.load_from_file(file)
+    }
+
+    /// Load from a given file
+    pub fn load_from_file(&mut self, file: File) -> std::io::Result<()> {
         let reader = BufReader::new(file);
         self.load_from_reader(reader)
     }
@@ -75,6 +80,10 @@ impl AliasConfig {
         self.aliases.insert(alias, command);
     }
 
+    pub fn alias_to_command(&self, alias: String) -> Option<String> {
+        self.aliases.get(&alias).cloned()
+    }
+
     /// Remove an alias from the alias mapping if it exists.
     /// Returns Some(command) if there was a command associated with this alias.
     /// else returns None.
@@ -89,6 +98,10 @@ impl AliasConfig {
     pub fn dump_aliases_to_alias_file(self) -> std::io::Result<()> {
         let file = File::create(&self.config_location)?;
         println!("Writing to {:?}", self.config_location);
+        self.dump_aliases_to_specified_file(file)
+    }
+
+    pub fn dump_aliases_to_specified_file(self, file: File) -> std::io::Result<()> {
         let writer = BufWriter::new(file);
         self.dump_aliases_to_writer(writer)
     }
