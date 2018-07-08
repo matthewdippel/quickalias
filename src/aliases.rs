@@ -80,10 +80,6 @@ impl AliasConfig {
         self.aliases.insert(alias, command);
     }
 
-    pub fn alias_to_command(&self, alias: String) -> Option<String> {
-        self.aliases.get(&alias).cloned()
-    }
-
     /// Remove an alias from the alias mapping if it exists.
     /// Returns Some(command) if there was a command associated with this alias.
     /// else returns None.
@@ -98,10 +94,10 @@ impl AliasConfig {
     pub fn dump_aliases_to_alias_file(self) -> std::io::Result<()> {
         let file = File::create(&self.config_location)?;
         println!("Writing to {:?}", self.config_location);
-        self.dump_aliases_to_specified_file(file)
+        self.dump_aliases_to_specified_file(&file)
     }
 
-    pub fn dump_aliases_to_specified_file(self, file: File) -> std::io::Result<()> {
+    pub fn dump_aliases_to_specified_file(self, file: &File) -> std::io::Result<()> {
         let writer = BufWriter::new(file);
         self.dump_aliases_to_writer(writer)
     }
@@ -109,9 +105,11 @@ impl AliasConfig {
     fn dump_aliases_to_writer<T: Write>(&self, mut writer: T) -> std::io::Result<()> {
         let mut sorted_aliases: Vec<(&String, &String)> = self.aliases.iter().collect();
         sorted_aliases.sort();
+
         for &(ref alias, ref command) in sorted_aliases.iter() {
-            let line = format!("alias {}=\"{}\"\n", alias, command);
-            writer.write(line.as_bytes())?;
+            //let line = format!("alias {}=\"{}\"\n", alias, command);
+            writeln!(writer, "alias {}=\"{}\"", alias, command)?;
+            //writer.write(line.as_bytes())?;
         }
         writer.flush()?;
         Ok(())
